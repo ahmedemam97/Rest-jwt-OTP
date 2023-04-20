@@ -6,56 +6,53 @@ use Validator;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
 
 class UserCrudController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('jwt.auth');
+    }
+
     public function index()
     {
         $users = User::all();
-        return response()->json(['data' => $users], 200);
+        return response()->json(compact('users'));
     }
 
-    public function show(User $user)
-    {
-        return response()->json(['data' => $user], 200);
-    }
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8',
-        ]);
-
-        $validatedData['password'] = bcrypt($validatedData['password']);
-        $user = User::create($validatedData);
-
-        return response()->json(['data' => $user], 201);
+        $user = new User;
+        $user->name = $request->name;
+        $user->phone = $request->phone;
+        $user->password = bcrypt($request->password);
+        $user->save();
+        return response()->json(['message' => 'User created successfully']);
     }
 
-    public function update(Request $request, User $user)
+    public function show($id)
     {
-        $validatedData = $request->validate([
-            'name' => 'sometimes|string',
-            'email' => 'sometimes|email|unique:users,email,',
-            'password' => 'sometimes|min:8',
-        ]);
+        $user = User::find($id);
+        return response()->json(compact('user'));
+    }
 
-        if (isset($validatedData['password'])) {
-            $validatedData['password'] = bcrypt($validatedData['password']);
+    public function update(Request $request, $id)
+    {
+        $user = User::find($id);
+        $user->name = $request->name;
+        $user->phone = $request->phone;
+        if (!empty($request->password)) {
+            $user->password = bcrypt($request->password);
         }
-
-        $user->update($validatedData);
-
-        return response()->json(['data' => $user], 200);
+        $user->save();
+        return response()->json(['message' => 'User updated successfully']);
     }
 
-    public function destroy(User $user)
+    public function destroy($id)
     {
+        $user = User::find($id);
         $user->delete();
-
-        return response()->json([], 204);
+        return response()->json(['message' => 'User deleted successfully']);
     }
 }

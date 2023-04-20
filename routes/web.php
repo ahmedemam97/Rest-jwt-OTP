@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Auth\RegisterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,4 +25,9 @@ Auth::routes();
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::get('/layouts', [UserController::class, 'index']);    
-Route::get('/layouts/{id}', [UserController::class, 'edit']);    
+Route::get('/layouts/{id}', [UserController::class, 'edit']);
+
+Route::get('/verify', function () {
+    return view('auth.verify');
+})->name('verify');
+Route::post('/verify', [RegisterController::class,'verify'])->name('verify');
